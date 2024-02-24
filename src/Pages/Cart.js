@@ -1,5 +1,4 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -9,12 +8,17 @@ import {
   fetchCart,
   selectCart,
 } from "../Redux/slices/cartSlice";
+import {
+  createOrder,
+  fetchOrdersForUser,
+  selectOrder,
+} from "../Redux/slices/orderSlice";
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const cartItems = useSelector(selectCart);
+  const { id, data } = useSelector(selectCart);
   const navigate = useNavigate();
-
+  const { orderData } = useSelector(selectOrder);
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
@@ -34,10 +38,7 @@ const Cart = () => {
 
   // Calculate total
   const calculateTotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + calculateSubtotal(item),
-      0
-    );
+    return data.reduce((total, item) => total + calculateSubtotal(item), 0);
   };
 
   // Handle quantity change
@@ -54,7 +55,7 @@ const Cart = () => {
     <div className="h-screen bg-gray-100 pt-10">
       <div className="mx-auto max-w-5xl justify-center px-6 md:flex md:space-x-6 xl:px-0">
         <div className="rounded-lg md:w-2/3">
-          {cartItems.map((item) => (
+          {data.map((item) => (
             <div
               key={item._id}
               className="justify-between mb-6 rounded-lg bg-white p-6 shadow-md sm:flex sm:justify-start"
@@ -93,7 +94,7 @@ const Cart = () => {
                   </div>
                   <div
                     className="flex items-center space-x-4"
-                    onClick={() => deleteCartItem(item.productId._id)}
+                    onClick={() => deleteCartItemHandler(item.productId._id)}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

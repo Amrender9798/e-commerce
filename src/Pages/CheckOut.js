@@ -6,11 +6,12 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import { useDispatch } from "react-redux";
 
 const CheckOut = ({ totalAmount }) => {
   const stripe = useStripe();
   const elements = useElements();
-
+  const dispatch = useDispatch();
   const handleSubmit = async (event) => {
     event.preventDefault();
 

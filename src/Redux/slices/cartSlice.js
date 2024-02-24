@@ -32,8 +32,8 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-    console.log(response.data.cart);
-    return response.data.cart;
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     throw error;
   }
@@ -61,6 +61,7 @@ export const deleteCartItem = createAsyncThunk(
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
+    id: null,
     data: [],
     loading: false,
     error: null,
@@ -84,7 +85,8 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.data = action.payload;
+        state.data = action.payload.cart;
+        state.id = action.payload.cartId;
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
@@ -106,5 +108,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const selectCart = (state) => state.cart.data;
+export const selectCart = (state) => state.cart;
 export default cartSlice.reducer;

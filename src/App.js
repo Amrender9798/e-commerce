@@ -26,9 +26,7 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute element={<Cart />} />} />
         <Route path="/order" element={<ProtectedRoute element={<Order />} />} />
         <Route path="/checkout" element={<ProtectedRoute element={<CheckOut />} />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/test" element={<YourComponent/>}/>
-        
+        <Route path="/test" element={<YourComponent/>}/> 
       </Routes>
     </div>
   );

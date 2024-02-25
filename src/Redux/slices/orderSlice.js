@@ -5,15 +5,15 @@ import axios from "axios";
 // Async thunk to create a new order
 export const createOrder = createAsyncThunk(
   "order/createOrder",
-  async ({ cartId, amount, status }) => {
+  async ({ products, amount }) => {
     try {
+      console.log(products, amount);
       const token = localStorage.getItem("token");
       const response = await axios.post(
         "http://localhost:8081/orders/create",
         {
-          cartId,
+          products,
           amount,
-          status,
         },
         {
           headers: {
@@ -39,7 +39,9 @@ export const fetchOrdersForUser = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+
+      console.log(JSON.stringify(response.data, null, 2));
+      return response.data.userOrders;
     } catch (error) {
       throw error;
     }
@@ -49,7 +51,7 @@ export const fetchOrdersForUser = createAsyncThunk(
 const orderSlice = createSlice({
   name: "order",
   initialState: {
-    orderData: null,
+    orderData: [],
     loading: false,
     error: null,
   },

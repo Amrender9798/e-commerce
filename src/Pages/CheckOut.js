@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   CardNumberElement,
   CardExpiryElement,
@@ -6,21 +6,27 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { createOrder } from "../Redux/slices/orderSlice";
+import { emptyCart, fetchCart, selectCart } from "../Redux/slices/cartSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CheckOut = ({ totalAmount }) => {
   const stripe = useStripe();
   const elements = useElements();
   const dispatch = useDispatch();
+  const { id, data } = useSelector(selectCart);
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, []);
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
-      // Stripe.js has not yet loaded.
       return;
     }
     console.log(totalAmount);
-    // Create PaymentMethod
     const { paymentMethod, error } = await stripe.createPaymentMethod({
       type: "card",
       card: elements.getElement(CardNumberElement),
@@ -29,9 +35,7 @@ const CheckOut = ({ totalAmount }) => {
     if (error) {
       console.error(error);
     } else {
-      // Send paymentMethod.id to your server for further processing
       console.log("PaymentMethod:", paymentMethod);
-      // Make an API call to complete the checkout on your server
       await handlePaymentOnServer(paymentMethod.id);
     }
   };
@@ -42,20 +46,17 @@ const CheckOut = ({ totalAmount }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add any necessary authentication headers
         },
         body: JSON.stringify({
           paymentMethodId,
-          amount: totalAmount * 100, // Convert amount to cents (Stripe uses smallest currency unit)
+          amount: totalAmount * 100,
         }),
       });
 
       const result = await response.json();
 
-      // Handle the result from your server
       console.log("Server Response:", result);
 
-      // Display a success or error message to the user
       if (result.success) {
         alert("Payment successful!");
       } else {
@@ -66,6 +67,43 @@ const CheckOut = ({ totalAmount }) => {
       alert("Payment failed. Please try again.");
     }
   };
+  const calculateSubtotal = (item) => {
+    return item.quantity * item.productId.price;
+  };
+  const calculateTotal = () => {
+    return data.reduce((total, item) => total + calculateSubtotal(item), 0);
+  };
+  const handlePayClick = () => {
+    try {
+      console.log(121);
+      console.log(JSON.stringify(data, null, 2));
+      const products = data.map((item) => ({
+        productName: item.productId.productName,
+        price: item.productId.price,
+        quantity: item.quantity,
+      }));
+      const amount = data.reduce(
+        (total, item) => total + item.productId.price * item.quantity,
+        0
+      );
+      console.log(products, amount);
+      dispatch(createOrder({products, amount}));
+      dispatch(emptyCart());
+      toast.success("Order successfully placed!");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  if (true) {
+    return (
+      <button
+        className="bg-blue-500 text-white py-20 px-40 rounded-md cursor-pointer hover:bg-blue-700"
+        onClick={handlePayClick}
+      >
+        Pay Now
+      </button>
+    );
+  }
 
   return (
     <form

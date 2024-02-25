@@ -58,6 +58,18 @@ export const deleteCartItem = createAsyncThunk(
     }
   }
 );
+
+export const emptyCart = createAsyncThunk("cart/emptyCart", async () => {
+  try {
+    await axios.delete("http://localhost:8081/cart/empty", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
+});
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -102,6 +114,17 @@ const cartSlice = createSlice({
         );
       })
       .addCase(deleteCartItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(emptyCart.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(emptyCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = [];
+      })
+      .addCase(emptyCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

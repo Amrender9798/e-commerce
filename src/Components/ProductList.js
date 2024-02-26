@@ -1,24 +1,10 @@
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts, selectProducts } from "../Redux/slices/productSlice";
-import { useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const ProductList = () => {
-  const dispatch = useDispatch();
-  const products = useSelector(selectProducts);
+const ProductList = ({products}) => {
+  
 
-  useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
-
-  if (!products) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <CircularProgress />
-      </div>
-    );
-  }
+ 
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">

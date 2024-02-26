@@ -32,7 +32,7 @@ export const fetchProductById = createAsyncThunk(
 const productSlice = createSlice({
   name: "products",
   initialState: {
-    data: null, // Change from [] to null for a single product
+    data: [], // Change from [] to null for a single product
     loading: false,
     error: null,
   },

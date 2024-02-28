@@ -32,11 +32,28 @@ export const fetchProductById = createAsyncThunk(
 const productSlice = createSlice({
   name: "products",
   initialState: {
-    data: [], // Change from [] to null for a single product
+    data: [],
     loading: false,
     error: null,
+    filters: {
+      category: [],
+      price: null,
+      rating: null,
+    },
   },
-  reducers: {},
+  reducers: {
+    categoryFilter: (state, action) => {
+      
+      state.filters.category = action.payload;
+    },
+    priceFilter: (state, action) => {
+     
+      state.filters.price = action.payload;
+    },
+    ratingFilter: (state, action) => {
+      state.filters.rating = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -63,6 +80,26 @@ const productSlice = createSlice({
       });
   },
 });
+export const selectFilteredData = (state) => {
+  const { data, filters } = state.product;
+  const { category, price, rating } = filters;
+  let filteredData = data;
+  if (price) {
+    const { min, max } = price;
+    filteredData = filteredData.filter(
+      (product) => product.price > min && product.price < max
+    );
+  }
+  if (category.length > 0) {
+    filteredData = filteredData.filter((product) =>
+      category.includes(product.category)
+    );
+  }
+  return filteredData;
 
-export const selectProducts = (state) => state.product.data; // Note the change here
+  // Apply filters to data
+};
+export const selectProducts = (state) => state.product.data;
+export const { categoryFilter, priceFilter, ratingFilter } =
+  productSlice.actions;
 export default productSlice.reducer;

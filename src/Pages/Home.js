@@ -1,37 +1,31 @@
+// Home.js
 import React, { useEffect } from "react";
 import ProductList from "../Components/ProductList";
 import Sidebar from "../Components/Sidebar";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts, selectProducts } from "../Redux/slices/productSlice";
-import CircularProgress from "@mui/material/CircularProgress";
+import {
+  fetchProducts,
+  selectFilteredData,
+  selectProducts,
+} from "../Redux/slices/productSlice";
+
 const Home = () => {
   const dispatch = useDispatch();
-  const products = useSelector(selectProducts);
+  const allProducts = useSelector(selectProducts);
+  const filteredProducts = useSelector(selectFilteredData);
+
   useEffect(() => {
-    dispatch(fetchProducts());   
+    dispatch(fetchProducts());
   }, [dispatch]);
-  if (!products) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </div>
-    );
-  }
 
   return (
     <div className="flex">
       <div className="w-64">
-        <Sidebar products={products} />
+        <Sidebar products={allProducts} />
       </div>
       <div className="flex-grow">
-        {products && <ProductList products={products} />}
+        <ProductList products={filteredProducts} />
+        {/* Use filteredProducts, not selectFilteredData */}
       </div>
     </div>
   );

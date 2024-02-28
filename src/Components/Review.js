@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaUser } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addReview,
+  fetchReviews,
+  selectReview,
+} from "../Redux/slices/reviewSlice";
 
 const ReviewCard = ({ review }) => (
   <li className="mb-4 p-4 bg-white rounded-md shadow-md">
@@ -42,54 +47,28 @@ const ReviewCard = ({ review }) => (
 );
 
 const Review = ({ productId }) => {
+  const dispatch = useDispatch();
+  const reviews = useSelector(selectReview);
+  useEffect(() => {
+    dispatch(fetchReviews(productId));
+    console.log(reviews);
+  }, [dispatch, productId]);
   const [userReview, setUserReview] = useState("");
   const [userRating, setUserRating] = useState(0);
-  const [reviews, setReviews] = useState([]);
-
-  const fetchReviews = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8081/reviews/${productId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.data) {
-        setReviews(response.data);
-      } else {
-        console.error("Invalid API response. Expected review details.");
-      }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchReviews();
-  }, [productId]);
 
   const handleReviewSubmit = async () => {
+    console.log(localStorage.getItem('token'));
+    if (!localStorage.getItem("token")) {
+      toast.error('Please login to write a review');
+      return;
+    }
     try {
-      const response = await axios.post(
-        "http://localhost:8081/reviews/add",
-        {
-          productId,
-          reviewText: userReview,
-          rating: userRating,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+      dispatch(
+        addReview({ productId, reviewText: userReview, rating: userRating })
       );
       toast.success("Review added successfully");
-      console.log("Review added successfully", response.data);
-      fetchReviews();
-      // Reset userRating after submitting the review
+      dispatch(fetchReviews(productId));
+      setUserReview("");
       setUserRating(0);
     } catch (error) {
       console.error("Error adding review:", error);

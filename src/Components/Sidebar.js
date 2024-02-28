@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useDispatch } from "react-redux";
+import { categoryFilter, priceFilter } from "../Redux/slices/productSlice";
 
 const Sidebar = ({ products }) => {
-  const [filterOptions, setFilterOptions] = useState({
-    categories: [],
-    priceRanges: [],
-    ratings: [],
-  });
+  const dispatch = useDispatch();
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [priceRangeOptions, setPriceRangeOptions] = useState([]);
+  const [ratingOptions, setRatingOptions] = useState([]);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+
+  const ratings = useMemo(() => {
+    return Array.from({ length: 3 }, (_, index) => ({
+      id: index + 1,
+      name: `${index + 3} Star`,
+      checked: false,
+    }));
+  }, []);
 
   const categories = useMemo(() => {
     return [...new Set(products.map((product) => product.category))].map(
@@ -17,80 +28,98 @@ const Sidebar = ({ products }) => {
     );
   }, [products]);
 
-  const maxPrice = useMemo(
+  const maxPriceValue = useMemo(
     () => Math.max(...products.map((product) => product.price)),
     [products]
   );
 
   const priceRanges = useMemo(() => {
-    return Array.from({ length: 5 }, (_, index) => ({
-      id: index + 1,
-      name: `₹${(index * maxPrice) / 5} - ₹${((index + 1) * maxPrice) / 5}`,
-      checked: false,
-    }));
-  }, [maxPrice]);
-
-  const ratings = useMemo(() => {
-    return Array.from({ length: 5 }, (_, index) => ({
-      id: index + 1,
-      name: `${index + 1} Star`,
-      checked: false,
-    }));
-  }, []);
+    return Array.from({ length: 5 }, (_, index) => {
+      const min = (index * maxPriceValue) / 5;
+      const max = ((index + 1) * maxPriceValue) / 5;
+      return {
+        id: index + 1,
+        name: `₹${min} - ₹${max}`,
+        min,
+        max,
+        checked: false,
+      };
+    });
+  }, [maxPriceValue]);
 
   useEffect(() => {
-    // Set the filter options once products are available
-    setFilterOptions({
-      categories: categories.map((category) => ({
-        ...category,
-        checked: false,
-      })),
-      priceRanges: priceRanges.map((range) => ({
-        ...range,
-        checked: false,
-      })),
-      ratings: ratings.map((rating) => ({
-        ...rating,
-        checked: false,
-      })),
-    });
+    setCategoryOptions(
+      categories.map((category) => ({ ...category, checked: false }))
+    );
+    setPriceRangeOptions(
+      priceRanges.map((range) => ({ ...range, checked: false }))
+    );
+    setRatingOptions(ratings.map((rating) => ({ ...rating, checked: false })));
   }, [categories, priceRanges, ratings]);
 
-  const handleCheckboxChange = (categoryType, id) => {
-    console.log("Checkbox clicked:", categoryType, id);
-    setFilterOptions((prevFilterOptions) => {
-      const updatedOptions = {
-        ...prevFilterOptions,
-        [categoryType]: prevFilterOptions[categoryType].map((option) => {
-          if (categoryType === "priceRanges") {
-            // For priceRanges, uncheck all other checkboxes
-            return { ...option, checked: option.id === id };
-          } else {
-            // For other categories, toggle the clicked checkbox
-            return {
-              ...option,
-              checked: option.id === id ? !option.checked : option.checked,
-            };
-          }
-        }),
-      };
-      return updatedOptions;
-    });
-  };
+  useEffect(() => {
+    // Get selected categories
+    const selectedCategories = categoryOptions
+      .filter((category) => category.checked)
+      .map((category) => category.name);
+
+    // Dispatch the categoryFilter action with selected categories
+    dispatch(categoryFilter(selectedCategories));
+  }, [categoryOptions, dispatch]);
+
+  function handleCategoryChange(categoryId) {
+    setCategoryOptions((prevOptions) =>
+      prevOptions.map((category) =>
+        category.id === categoryId
+          ? { ...category, checked: !category.checked }
+          : category
+      )
+    );
+  }
+  useEffect(() => {
+    const selectedPriceRange = priceRangeOptions.find((range) => range.checked);
+    dispatch(
+      priceFilter(
+        selectedPriceRange
+          ? { min: selectedPriceRange.min, max: selectedPriceRange.max }
+          : null
+      )
+    );
+  }, [priceRangeOptions, dispatch]);
+
+  function handlePriceChange(priceId) {
+    setPriceRangeOptions((prevOptions) =>
+      prevOptions.map((range) => ({
+        ...range,
+        checked: range.id === priceId && !range.checked,
+      }))
+    );
+  }
+
+  function handleGoButtonClick() {
+    if (minPrice == "" && maxPrice == "") {
+      dispatch(priceFilter({ min: 0, max: maxPriceValue }));
+    } else if (minPrice == "") {
+      dispatch(priceFilter({ min: 0, max: maxPrice }));
+    } else if (maxPrice == "") {
+      dispatch(priceFilter({ min: minPrice, max: maxPriceValue }));
+    } else {
+      dispatch(priceFilter({ min: minPrice, max: maxPrice }));
+    }
+  }
 
   return (
-    <div className="bg-gray-800 text-white w-64 overflow-y-auto">
-      <ul className="space-y-2">
-        {/* Filter Options */}
+    <div className="bg-gray-800 text-white overflow-y-auto w-64 fixed">
+      <ul>
         <li className="p-4">
           <label className="block mb-2 text-xl">Category</label>
-          {filterOptions.categories.map((category) => (
+          {categoryOptions.map((category) => (
             <div key={category.id} className="mb-2">
               <input
                 type="checkbox"
                 id={`category-${category.id}`}
                 checked={category.checked}
-                onChange={() => handleCheckboxChange("categories", category.id)}
+                onChange={() => handleCategoryChange(category.id)}
               />
               <label htmlFor={`category-${category.id}`} className="ml-2">
                 {category.name}
@@ -98,35 +127,60 @@ const Sidebar = ({ products }) => {
             </div>
           ))}
 
-          <label className="block mt-4 mb-2 text-xl">Price Range</label>
-          {filterOptions.priceRanges.map((range) => (
-            <div key={range.id} className="mb-2">
+          {/* <label className="block mt-4 mb-2 text-xl">Rating</label>
+          {ratingOptions.map((rating) => (
+            <div key={rating.id} className="mb-2">
               <input
                 type="checkbox"
+                id={`rating-${rating.id}`}
+                checked={rating.checked}
+              />
+              <label htmlFor={`rating-${rating.id}`} className="ml-2">
+                {rating.name}
+              </label>
+            </div>
+          ))} */}
+
+          {/* Price Range Options */}
+          <label className="block mt-4 mb-2 text-xl">Price Range</label>
+          {priceRangeOptions.map((range, index) => (
+            <div
+              key={range.id}
+              className={index === priceRangeOptions.length - 1 ? "" : "mb-2"}
+            >
+              <input
+                type="radio"
                 id={`price-${range.id}`}
                 checked={range.checked}
-                onChange={() => handleCheckboxChange("priceRanges", range.id)}
+                onClick={() => handlePriceChange(range.id)}
               />
               <label htmlFor={`price-${range.id}`} className="ml-2">
                 {range.name}
               </label>
             </div>
           ))}
-
-          <label className="block mt-4 mb-2 text-xl">Rating</label>
-          {filterOptions.ratings.map((rating) => (
-            <div key={rating.id} className="mb-2">
-              <input
-                type="checkbox"
-                id={`rating-${rating.id}`}
-                checked={rating.checked}
-                onChange={() => handleCheckboxChange("ratings", rating.id)}
-              />
-              <label htmlFor={`rating-${rating.id}`} className="ml-2">
-                {rating.name}
-              </label>
-            </div>
-          ))}
+        </li>
+        <li className="px-4 flex space-x-2 mb-6 text-black">
+          <input
+            type="number"
+            placeholder="Min"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            className="w-1/2 px-2 py-1 border rounded"
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            className="w-1/2 px-2 py-1 border rounded"
+          />
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            onClick={handleGoButtonClick}
+          >
+            Go
+          </button>
         </li>
       </ul>
     </div>

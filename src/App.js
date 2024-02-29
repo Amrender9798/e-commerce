@@ -12,6 +12,8 @@ import Order from "./Pages/Order";
 import ProtectedRoute from "./ProtectedRoute";
 import CheckOut from "./Pages/CheckOut";
 import YourComponent from "./Components/YourComponent";
+import ResetPassword from "./Pages/ResetPassword";
+import SetPassword from "./Pages/SetPassword";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/order" element={<ProtectedRoute element={<Order />} />} />
         <Route path="/checkout" element={<ProtectedRoute element={<CheckOut />} />} />
         <Route path="/test" element={<YourComponent/>}/> 
+        <Route path="/reset-password" element={<ResetPassword/>}/>
+        <Route path="/set-password" element={<SetPassword/>}/>
       </Routes>
     </div>
   );

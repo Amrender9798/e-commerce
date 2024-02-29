@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
-import { categoryFilter, priceFilter } from "../Redux/slices/productSlice";
+import { categoryFilter, priceFilter, ratingFilter } from "../Redux/slices/productSlice";
 
 const Sidebar = ({ products }) => {
   const dispatch = useDispatch();
@@ -13,7 +13,7 @@ const Sidebar = ({ products }) => {
   const ratings = useMemo(() => {
     return Array.from({ length: 3 }, (_, index) => ({
       id: index + 1,
-      name: `${index + 3} Star`,
+      name: `More than ${index + 2} stars`,
       checked: false,
     }));
   }, []);
@@ -95,6 +95,20 @@ const Sidebar = ({ products }) => {
       }))
     );
   }
+  useEffect(() => {
+    const selectedRatingRange = ratingOptions.find((range) => range.checked);
+    dispatch(ratingFilter(selectedRatingRange ? selectedRatingRange.id + 1 : null));
+  }, [ratingOptions, dispatch]);
+
+  function handleRatingChange(ratingId) {
+    setRatingOptions((prevOptions) =>
+      prevOptions.map((range) => ({
+        ...range,
+        checked: range.id === ratingId && !range.checked,
+      }))
+    );
+  }
+  
 
   function handleGoButtonClick() {
     if (minPrice == "" && maxPrice == "") {
@@ -109,7 +123,7 @@ const Sidebar = ({ products }) => {
   }
 
   return (
-    <div className="bg-gray-800 text-white overflow-y-auto w-64 fixed">
+    <div className="bg-gray-800 text-white overflow-y-auto  sticky top-0 h-screen">
       <ul>
         <li className="p-4">
           <label className="block mb-2 text-xl">Category</label>
@@ -127,19 +141,20 @@ const Sidebar = ({ products }) => {
             </div>
           ))}
 
-          {/* <label className="block mt-4 mb-2 text-xl">Rating</label>
+          <label className="block mt-4 mb-2 text-xl">Rating</label>
           {ratingOptions.map((rating) => (
             <div key={rating.id} className="mb-2">
               <input
-                type="checkbox"
+                type="radio"
                 id={`rating-${rating.id}`}
                 checked={rating.checked}
+                onClick={() => handleRatingChange(rating.id)}
               />
               <label htmlFor={`rating-${rating.id}`} className="ml-2">
                 {rating.name}
               </label>
             </div>
-          ))} */}
+          ))}
 
           {/* Price Range Options */}
           <label className="block mt-4 mb-2 text-xl">Price Range</label>

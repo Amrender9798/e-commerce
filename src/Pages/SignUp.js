@@ -1,10 +1,7 @@
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -12,8 +9,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { signUp } from "../Redux/slices/authenticationSlice";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
@@ -21,22 +20,20 @@ const defaultTheme = createTheme();
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log('Sign Up');
-    try {
-      const response = await axios.post("http://localhost:8081/auth/register", {
+    console.log("Sign Up");
+
+    dispatch(
+      signUp({
         username: data.get("firstName") + " " + data.get("lastName"),
         email: data.get("email"),
         password: data.get("password"),
-      });
-
-      navigate('/sign-in');
-      console.log("API Response:", response.data);
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
+      })
+    );
+    navigate("/sign-in");
   };
 
   return (

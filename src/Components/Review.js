@@ -67,7 +67,6 @@ const Review = ({ productId }) => {
         addReview({ productId, reviewText: userReview, rating: userRating })
       );
       toast.success("Review added successfully");
-      dispatch(fetchReviews(productId));
       setUserReview("");
       setUserRating(0);
     } catch (error) {

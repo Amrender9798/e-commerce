@@ -1,4 +1,3 @@
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -14,31 +13,36 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuth, signIn } from "../Redux/slices/authenticationSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { success } = useSelector(selectAuth);
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-
-    try {
-      const response = await axios.post("http://localhost:8081/auth/login", {
-        email: data.get("email"),
-        password: data.get("password"),
-      });
-
-      console.log("API Response:", response.data);
-      const { token } = response.data;
-      localStorage.setItem("token", token);
-      navigate("/");
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
+    dispatch(
+      signIn({ email: data.get("email"), password: data.get("password") })
+    );
   };
+  useEffect(() => {
+    if (success !== null) {
+      if (success) {
+        navigate("/");
+      } else {
+        toast.error("Please enter valid credentials");
+      }
+    }
+  }, [success]);
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -98,7 +102,7 @@ export default function SignIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="/reset-password" variant="body2">
                   Forgot password?
                 </Link>
               </Grid>

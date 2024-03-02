@@ -24,7 +24,6 @@ export default function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log("Sign Up");
 
     dispatch(
       signUp({

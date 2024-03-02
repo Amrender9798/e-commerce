@@ -23,6 +23,7 @@ export const fetchProductById = createAsyncThunk(
       const response = await axios.get(
         `http://localhost:8081/products/${productId}`
       );
+      console.log("fetchProductById", response.data);
       return response.data;
     } catch (error) {
       throw error;
@@ -36,6 +37,7 @@ const productSlice = createSlice({
     data: [],
     loading: false,
     error: null,
+    productById: null,
     filters: {
       category: [],
       price: null,
@@ -76,7 +78,7 @@ const productSlice = createSlice({
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
         state.loading = false;
-        state.data = action.payload;
+        state.productById = action.payload;
       })
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
@@ -100,8 +102,8 @@ export const selectFilteredData = (state) => {
     );
   }
   if (rating) {
-    filteredData = filteredData.filter((product) => 
-       product.rating.stars / product.rating.users > rating
+    filteredData = filteredData.filter(
+      (product) => product.rating.stars / product.rating.users > rating
     );
   }
   if (search.trim() !== "") {
@@ -114,6 +116,7 @@ export const selectFilteredData = (state) => {
   // Apply filters to data
 };
 export const selectProducts = (state) => state.product.data;
+export const selectProductById = (state) => state.product.productById;
 export const { categoryFilter, priceFilter, ratingFilter, searchFilter } =
   productSlice.actions;
 export default productSlice.reducer;

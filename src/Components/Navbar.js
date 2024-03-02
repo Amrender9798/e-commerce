@@ -1,4 +1,4 @@
-import React from "react";
+import { NavLink } from "react-router-dom";
 import {
   AiOutlineHome,
   AiOutlineShopping,
@@ -8,30 +8,32 @@ import {
   AiOutlineShoppingCart,
   AiOutlineSearch,
 } from "react-icons/ai";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { searchFilter } from "../Redux/slices/productSlice";
 import { useLocation } from "react-router-dom";
+import { logoutUser, selectAuth } from "../Redux/slices/authenticationSlice";
 
 const Navbar = () => {
-  const isLoggedIn = localStorage.getItem("token");
+  const { success } = useSelector(selectAuth);
   const dispatch = useDispatch();
   const location = useLocation();
 
   const handleSearch = (event) => {
-    // Handle search functionality here
     const searchTerm = event.target.value;
     dispatch(searchFilter(searchTerm));
-
-    // Implement your search logic using the searchTerm
   };
+
   const isHomePage = location.pathname === "/";
   const paddingY = isHomePage ? "py-4" : "py-5";
+
+  const activeClassName = "border-b-2 border-white"; // Add your active link style
+
   return (
     <nav
       className={`bg-gray-800 px-5 ${paddingY} flex justify-between items-center`}
     >
       {/* Left Side - Logo */}
-      <div className="text-white font-bold text-xl mr-4">YourLogo</div>
+      <div className="text-white font-bold text-xl mr-4">Digital Den</div>
 
       {/* Center - Search Bar */}
       {isHomePage && (
@@ -52,33 +54,53 @@ const Navbar = () => {
 
       {/* Right Side - Navigation Links */}
       <div className="flex space-x-10 items-center">
-        <a href="/" className="text-white flex items-center">
+        <NavLink
+          to="/"
+          className={`text-white flex items-center ${
+            location.pathname === "/" ? activeClassName : ""
+          }`}
+        >
           <AiOutlineHome size={25} className="mr-1" />
           Home
-        </a>
-        <a href="/order" className="text-white flex items-center">
+        </NavLink>
+        <NavLink
+          to="/order"
+          className={`text-white flex items-center ${
+            location.pathname === "/order" ? activeClassName : ""
+          }`}
+        >
           <AiOutlineShopping size={25} className="mr-1" />
           My Orders
-        </a>
-        <a href="/cart" className="text-white flex items-center">
+        </NavLink>
+        <NavLink
+          to="/cart"
+          className={`text-white flex items-center ${
+            location.pathname === "/cart" ? activeClassName : ""
+          }`}
+        >
           <AiOutlineShoppingCart size={25} className="mr-1" />
           Cart
-        </a>
+        </NavLink>
 
-        {isLoggedIn ? (
+        {success ? (
           <a
             href="/"
             className="text-white flex items-center"
-            onClick={() => localStorage.removeItem("token")}
+            onClick={() => dispatch(logoutUser())}
           >
             <AiOutlineLogout size={25} className="mr-1" />
             Sign Out
           </a>
         ) : (
-          <a href="/sign-in" className="text-white flex items-center">
+          <NavLink
+            to="/sign-in"
+            className={`text-white flex items-center ${
+              location.pathname === "/sign-in" ? activeClassName : ""
+            }`}
+          >
             <AiOutlineLogin size={20} className="mr-1" />
             Sign In
-          </a>
+          </NavLink>
         )}
       </div>
     </nav>

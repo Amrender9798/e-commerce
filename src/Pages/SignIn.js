@@ -14,7 +14,11 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAuth, signIn } from "../Redux/slices/authenticationSlice";
+import {
+  logoutUser,
+  selectAuth,
+  signIn,
+} from "../Redux/slices/authenticationSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
@@ -26,7 +30,7 @@ const defaultTheme = createTheme();
 export default function SignIn() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { success } = useSelector(selectAuth);
+  const { success, exp } = useSelector(selectAuth);
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -37,6 +41,12 @@ export default function SignIn() {
   useEffect(() => {
     if (success !== null) {
       if (success) {
+        console.log("I am successs");
+        setTimeout(() => {
+          dispatch(logoutUser());
+          navigate("/");
+          toast.info("Your session has ended");
+        }, exp);
         navigate("/");
       } else {
         toast.error("Please enter valid credentials");

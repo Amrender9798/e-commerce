@@ -4,14 +4,18 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Review from "../Components/Review";
 import CircularProgress from "@mui/material/CircularProgress";
-import { fetchProductById, selectProducts } from "../Redux/slices/productSlice";
+import {
+  fetchProductById,
+  selectProductById,
+  selectProducts,
+} from "../Redux/slices/productSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../Redux/slices/cartSlice"; // Import your cart action
 
 const ProductDetail = () => {
   const { productId } = useParams();
   const dispatch = useDispatch();
-  const product = useSelector(selectProducts);
+  const product = useSelector(selectProductById);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [quantityOptions, setQuantityOptions] = useState([]);
   const navigate = useNavigate();
@@ -31,8 +35,8 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     const token = localStorage.getItem("token");
-    if(!token){
-      navigate('/sign-in');
+    if (!token) {
+      navigate("/sign-in");
       return;
     }
     dispatch(addToCart({ productId, quantity: selectedQuantity }));

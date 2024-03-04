@@ -116,7 +116,10 @@ export const selectFilteredData = (state) => {
   // Apply filters to data
 };
 export const selectProducts = (state) => state.product.data;
+export const selectProductLoading = (state) => state.product.loading;
+export const selectProductError = (state) => state.product.error;
 export const selectProductById = (state) => state.product.productById;
+
 export const { categoryFilter, priceFilter, ratingFilter, searchFilter } =
   productSlice.actions;
 export default productSlice.reducer;

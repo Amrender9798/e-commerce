@@ -14,6 +14,7 @@ import CheckOut from "./Pages/CheckOut";
 import YourComponent from "./Components/YourComponent";
 import ResetPassword from "./Pages/ResetPassword";
 import SetPassword from "./Pages/SetPassword";
+import OrderSuccess from "./Pages/OrderSuccess";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/test" element={<YourComponent/>}/> 
         <Route path="/reset-password" element={<ResetPassword/>}/>
         <Route path="/set-password" element={<SetPassword/>}/>
+        <Route path="/success" element={<OrderSuccess/>}/>
       </Routes>
     </div>
   );

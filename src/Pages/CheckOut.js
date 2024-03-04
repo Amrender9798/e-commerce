@@ -4,13 +4,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchCart, selectCart } from "../Redux/slices/cartSlice";
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "axios";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 
 function Checkout() {
   const dispatch = useDispatch();
   const { data } = useSelector(selectCart);
   const [addresses, setAddresses] = useState([]);
+  const[selectedAddress,setSelectedAddress] = useState(null);
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -96,6 +96,14 @@ function Checkout() {
   };
 
   async function handleOrder() {
+    const orderInfo = {
+      phone: formData.phone,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      postalCode: formData.postalCode,
+      paymentMethod: formData.paymentMethod,
+    };
     const stripe = await loadStripe(
       "pk_test_51NyFnbSItGzs2jnUWE0Y1DVQPmHz6XPZb3EZBniopx9k05g8tiecxNZS3YsWmjRWnDARp21VeKrC31ptFTjU6ES100pFr94uzk"
     );
@@ -104,6 +112,7 @@ function Checkout() {
       "http://localhost:8081/payment/create",
       {
         data,
+        orderInfo
       },
       {
         headers: {
@@ -112,10 +121,11 @@ function Checkout() {
       }
     );
     const session = response.data;
-    await stripe.redirectToCheckout({
+    const result = await stripe.redirectToCheckout({
       sessionId: session.id,
     });
-    console.log("I am inside order", session);
+    
+    
   }
 
   return (
@@ -316,6 +326,7 @@ function Checkout() {
                         name="selectedAddress"
                         value={address.id}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={()=>setSelectedAddress(address)}
                       />
                       <label
                         htmlFor={`address-${address.id}`}
@@ -344,9 +355,9 @@ function Checkout() {
                       {/* ... (payment options) */}
                       <input
                         id="cash"
-                        name="payments"
+                        name="paymentMethod"
                         type="radio"
-                        value="cash"
+                        value="Cash"
                         onChange={handleInputChange}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -360,9 +371,9 @@ function Checkout() {
                     <div className="flex items-center gap-x-3">
                       <input
                         id="online"
-                        name="payments"
+                        name="paymentMethod"
                         type="radio"
-                        value="online"
+                        value="Card"
                         onChange={handleInputChange}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -370,7 +381,7 @@ function Checkout() {
                         htmlFor="online"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
-                        Online
+                        Card
                       </label>
                     </div>
                   </div>

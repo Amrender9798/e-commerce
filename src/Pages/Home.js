@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProducts,
   selectFilteredData,
+  selectProductError,
+  selectProductLoading,
   selectProducts,
 } from "../Redux/slices/productSlice";
-import { Pagination } from "@mui/material";
+import { CircularProgress, Pagination } from "@mui/material";
 import { styled } from "@mui/system";
 
 const CustomPagination = styled(Pagination)({
@@ -15,7 +17,7 @@ const CustomPagination = styled(Pagination)({
   justifyContent: "center",
   margin: "20px 0",
   "& .MuiPaginationItem-root": {
-    fontSize: "1.5rem", // Set the font size to make it bigger
+    fontSize: "1.5rem",
   },
 });
 
@@ -23,7 +25,8 @@ const Home = () => {
   const dispatch = useDispatch();
   const allProducts = useSelector(selectProducts);
   const filteredProducts = useSelector(selectFilteredData);
-
+  const loading = useSelector(selectProductLoading);
+  const error = useSelector(selectProductError);
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
@@ -45,6 +48,25 @@ const Home = () => {
   const handlePageChange = (event, page) => {
     setCurrentPage(page);
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p>SERVER ERROR: {error}</p>;
+  }
 
   return (
     <div className="flex">
